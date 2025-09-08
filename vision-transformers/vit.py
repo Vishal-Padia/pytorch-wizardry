@@ -47,7 +47,7 @@ class Embeddings(nn.Module):
         self.cls_token = nn.Parameter(torch.randn(1, 1, config["hidden_size"]))
 
         # create position embeddings for the [CLS] token and patch embeddings
-        self.position_embeddings = nn.Parameter(torch.randn(1, out=self.patch_embeddings.num_patches + 1, config["hidden_size"]))
+        self.position_embeddings = nn.Parameter(torch.randn(1, self.patch_embeddings.num_patches + 1, config["hidden_size"]))
         self.dropout = nn.Dropout(config["hidden_dropout_prob"])
 
     def forward(self, x):

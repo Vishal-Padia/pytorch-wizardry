@@ -7,6 +7,7 @@ import torch
 from torch.nn import functional as F
 import torchvision
 import torchvision.transforms as transforms
+import wandb
 
 from vit import ViTForClassification
 
@@ -79,7 +80,7 @@ def visualize_images():
 
 
 @torch.no_grad()
-def visualize_attention(model, output=None, device="cuda"):
+def visualize_attention(model, output=None, device="cuda", use_wandb=False):
     """
     Visualize the attention maps of the first 4 images.
     """
@@ -120,9 +121,15 @@ def visualize_attention(model, output=None, device="cuda"):
     attention_maps = attention_maps.unsqueeze(1)
     attention_maps = F.interpolate(attention_maps, size=(32, 32), mode='bilinear', align_corners=False)
     attention_maps = attention_maps.squeeze(1)
+    
     # Plot the images and the attention maps
     fig = plt.figure(figsize=(20, 10))
     mask = np.concatenate([np.ones((32, 32)), np.zeros((32, 32))], axis=1)
+    
+    # Log to wandb if enabled
+    if use_wandb:
+        attention_images = []
+    
     for i in range(num_images):
         ax = fig.add_subplot(6, 5, i+1, xticks=[], yticks=[])
         img = np.concatenate((raw_images[i], raw_images[i]), axis=1)
@@ -135,6 +142,32 @@ def visualize_attention(model, output=None, device="cuda"):
         gt = classes[labels[i]]
         pred = classes[predictions[i]]
         ax.set_title(f"gt: {gt} / pred: {pred}", color=("green" if gt==pred else "red"))
+        
+        # Prepare images for wandb logging
+        if use_wandb:
+            # Create a separate figure for wandb
+            plt.figure(figsize=(5, 5))
+            plt.imshow(raw_images[i])
+            plt.title(f"gt: {gt} / pred: {pred}", color=("green" if gt==pred else "red"))
+            plt.axis('off')
+            
+            # Add attention map overlay
+            plt.imshow(attention_maps[i].cpu(), alpha=0.5, cmap='jet')
+            
+            # Convert to wandb Image
+            attention_images.append(wandb.Image(
+                plt, 
+                caption=f"Sample {i}: Ground Truth: {gt}, Prediction: {pred}"
+            ))
+            plt.close()
+    
     if output is not None:
         plt.savefig(output)
+    
+    # Log to wandb if enabled
+    if use_wandb:
+        wandb.log({"attention_visualization": attention_images})
+    
     plt.show()
+
+
