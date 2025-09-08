@@ -11,7 +11,7 @@ def prepare_data(batch_size=4, num_worker=2):
         transforms.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5))
         ]
     )
-    trainset = torchvision.datasets.CIFAR10(root='./data', train=True, download=True, transform=train_tranform)
+    trainset = torchvision.datasets.CIFAR10(root='data', train=True, download=True, transform=train_tranform)
 
     trainloader = torch.utils.data.DataLoader(dataset=trainset, batch_size=batch_size, shuffle=True, num_workers=num_worker)
 
@@ -22,7 +22,7 @@ def prepare_data(batch_size=4, num_worker=2):
         ]
     )
 
-    testset = torchvision.datasets.CIFAR10(root='./data', train=False, download=True, transform=test_transform)
+    testset = torchvision.datasets.CIFAR10(root='data', train=False, download=True, transform=test_transform)
 
     testloader = torch.utils.data.DataLoader(dataset=testset, batch_size=batch_size, shuffle=False, num_workers=num_worker)
 
